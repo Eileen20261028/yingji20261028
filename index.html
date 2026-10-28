@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f4f1ea" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="盈记" />
+  <title>盈记 · 投资交易记录</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-1024.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#" data-page-link="homePage"><span class="brand-mark">盈</span><span><strong>盈记</strong><small>投资批次管理</small></span></a>
+    <nav class="page-nav"><button class="active" data-page-link="homePage">首页</button><button data-page-link="holdingsPage">持仓</button><button data-page-link="matchesPage">配对明细</button></nav>
+    <div class="top-actions"><button class="btn btn-ghost cloud-status" id="cloudStatus">登录云端</button><button class="btn btn-ghost" id="manageCategories">管理分类</button><button class="btn btn-ghost" id="exportButton">导出 CSV</button><button class="btn btn-soft" id="addBuyButton">＋ 记录买入</button><button class="btn btn-primary" id="addSellButton">↗ 记录卖出</button></div>
+  </header>
+  <main id="top">
+    <section class="page-view active" id="homePage">
+      <section class="intro">
+        <div><p class="eyebrow">PORTFOLIO LEDGER</p><h1>看清每一批成本，<br><em>算准每一次收益。</em></h1><p>按买入批次追踪持仓，自由拆分并指定卖出配对。</p></div>
+        <div class="rule-card"><span>当前计算规则</span><strong>买卖交易费 0.02%</strong><strong>卖出印花税 0.05%</strong><small>全部费用按成交金额计算</small></div>
+      </section>
+      <section class="stats" aria-label="投资概览">
+        <article><span>累计投入</span><strong id="totalInvested">¥0.00</strong><small id="buyCount">0 笔买入</small></article>
+        <article><span>当前持仓成本</span><strong id="holdingCost">¥0.00</strong><small id="holdingQty">剩余 0 份</small></article>
+        <article><span>累计卖出</span><strong id="totalSold">¥0.00</strong><small id="sellCount">0 笔卖出</small></article>
+        <article><span>累计费用</span><strong id="totalFees">¥0.00</strong><small>交易费与印花税</small></article>
+        <article class="accent-stat"><span>已实现净盈利</span><strong id="realizedProfit">¥0.00</strong><small id="returnRate">收益率 0.00%</small></article>
+      </section>
+      <section id="analysis" class="analysis-section">
+        <div class="section-title analysis-title"><div><p class="eyebrow">ANALYTICS</p><h2>统计与分析</h2></div><label class="analysis-filter"><span>统计范围</span><select id="analysisCategory"><option value="">全部分类</option></select></label></div><div id="analysisEmpty" class="analysis-empty">记录并配对卖出后，这里会生成投资分析图表。</div>
+        <div id="charts" class="charts" hidden>
+          <article class="chart-card chart-wide"><div class="chart-head"><div><span>累计净盈利走势</span><small>按卖出日期累计</small></div><strong id="trendLatest">¥0.00</strong></div><div class="chart" id="profitTrend"></div></article>
+          <article class="chart-card"><div class="chart-head"><div><span>盈亏表现</span><small>已完成卖出笔数</small></div></div><div class="donut-layout"><div class="chart donut" id="winDonut"></div><div class="legend" id="winLegend"></div></div></article>
+          <article class="chart-card chart-wide"><div class="chart-head"><div><span>月度资金流</span><small>买入金额与卖出金额</small></div></div><div class="chart" id="monthlyFlow"></div></article>
+          <article class="chart-card"><div class="chart-head"><div><span>标的盈利排行</span><small>按已实现净盈利</small></div></div><div class="ranking" id="assetRanking"></div></article>
+          <article class="chart-card category-card"><div class="chart-head"><div><span>分类盈利统计</span><small>各类已实现盈利、收益率与卖出笔数</small></div></div><div class="category-stats" id="categoryStats"></div></article>
+        </div>
+      </section>
+    </section>
+
+    <section class="page-view" id="holdingsPage" hidden>
+      <div class="page-heading"><div><p class="eyebrow">CURRENT HOLDINGS</p><h1>持仓</h1><p>只统计目前仍未卖出的数量与成本。</p></div><button class="btn btn-soft" id="sectionAddBuy">＋ 新增买入</button></div>
+      <section class="panel">
+        <div class="section-head"><div><p class="eyebrow">SUMMARY</p><h2>总体持仓</h2></div></div>
+        <div class="table-scroll" id="holdingSummaryWrap" hidden><table><thead><tr><th>股票名称 / 代码</th><th>分类构成</th><th>买入批次数</th><th>总持仓数量</th><th>总持仓金额</th><th>平均单价</th></tr></thead><tbody id="holdingSummaryBody"></tbody></table></div>
+      </section>
+      <section class="panel">
+        <div class="section-head"><div><p class="eyebrow">OPEN LOTS</p><h2>未卖出明细</h2></div><div class="head-tools"><label class="search"><span>⌕</span><input id="buySearch" type="search" placeholder="搜索名称、代码或分类"></label></div></div>
+        <div class="table-scroll" id="buyTableWrap" hidden><table><thead><tr><th>标的 / 买入时间</th><th>分类</th><th>买入单价</th><th>原买入数量</th><th>已卖数量</th><th>剩余数量</th><th>剩余买入金额</th><th></th></tr></thead><tbody id="buyBody"></tbody></table></div><p class="no-results" id="buyNoResults" hidden>没有找到匹配的未卖出明细。</p>
+      </section>
+    </section>
+
+    <section class="page-view" id="matchesPage" hidden>
+      <div class="page-heading"><div><p class="eyebrow">MATCHED TRADES</p><h1>配对明细</h1><p>每个卖出数量与对应买入批次单独列示。</p></div><button class="btn btn-primary" id="sectionAddSell">↗ 新增卖出</button></div>
+      <section class="panel">
+        <div class="section-head"><div><p class="eyebrow">REALIZED PAIRS</p><h2>已卖出配对</h2></div><div class="head-tools"><label class="search"><span>⌕</span><input id="sellSearch" type="search" placeholder="搜索名称、代码或分类"></label></div></div>
+        <div class="table-scroll" id="sellTableWrap" hidden><table class="pair-table"><thead><tr><th>标的</th><th>分类</th><th>数量</th><th>买入金额</th><th>卖出金额</th><th>净盈利</th><th>利润率</th><th>持仓天数</th><th>买入时间</th><th>卖出时间</th><th>费用</th><th>对应买入批次</th><th></th></tr></thead><tbody id="sellBody"></tbody></table></div><p class="no-results" id="sellNoResults" hidden>没有找到匹配的配对明细。</p>
+      </section>
+    </section>
+  </main>
+  <footer><span>盈记 · 数据仅保存在您的浏览器中</span><span>买入交易费 0.02% · 卖出交易费 0.02% · 印花税 0.05%</span></footer>
+  <dialog id="buyDialog"><form id="buyForm" novalidate>
+    <div class="dialog-head"><div><p class="eyebrow">BUY LOT</p><h2 id="buyDialogTitle">记录买入批次</h2></div><button type="button" class="close" data-close="buyDialog">×</button></div><input id="buyId" type="hidden">
+    <div class="form-grid"><label class="field wide"><span>股票 / 基金名称 *</span><input id="buyName" list="assetNameOptions" maxlength="30" placeholder="输入已有名称可自动带出代码" autocomplete="off" required><datalist id="assetNameOptions"></datalist></label><label class="field"><span>代码 *</span><input id="buyCode" list="assetCodeOptions" maxlength="12" placeholder="输入已有代码可自动带出名称" autocomplete="off" required><datalist id="assetCodeOptions"></datalist></label><label class="field"><span>交易分类 *</span><select id="buyCategory" required></select></label><label class="field"><span>买入日期 *</span><input id="buyDate" type="date" required></label><label class="field"><span>买入单价 *</span><div class="input-prefix"><i>¥</i><input id="buyPrice" type="number" min="0.0001" step="0.0001" placeholder="0.0000" required></div></label><label class="field"><span>买入数量 * <small>箭头每次 ±100</small></span><input id="buyQuantity" type="number" min="0" step="100" placeholder="0" required></label><label class="field wide"><span>备注</span><textarea id="buyNote" rows="2" maxlength="100" placeholder="可记录买入原因或策略"></textarea></label></div>
+    <div class="calc-box"><div><span>买入金额</span><strong id="buyAmountPreview">¥0.00</strong></div><div><span>买入交易费（0.02%）</span><strong id="buyFeePreview">¥0.00</strong></div><div class="calc-total"><span>总投入</span><strong id="buyTotalPreview">¥0.00</strong></div></div><p class="form-error" id="buyError"></p><div class="dialog-actions"><button type="button" class="btn btn-ghost" data-close="buyDialog">取消</button><button type="submit" class="btn btn-primary">保存买入</button></div>
+  </form></dialog>
+  <dialog id="sellDialog"><form id="sellForm" novalidate>
+    <div class="dialog-head"><div><p class="eyebrow">SELL & MATCH</p><h2 id="sellDialogTitle">记录卖出并指定配对</h2></div><button type="button" class="close" data-close="sellDialog">×</button></div><input id="sellId" type="hidden">
+    <div class="form-grid"><label class="field wide"><span>卖出标的 *</span><select id="sellAsset" required><option value="">请选择有持仓的标的</option></select></label><label class="field"><span>交易分类 *</span><select id="sellCategory" required></select></label><label class="field"><span>卖出日期 *</span><input id="sellDate" type="date" required></label><label class="field"><span>卖出单价 *</span><div class="input-prefix"><i>¥</i><input id="sellPrice" type="number" min="0.0001" step="0.0001" placeholder="0.0000" required></div></label></div>
+    <div class="allocation-head"><div><strong>指定买入批次和数量</strong><small>可拆分同一批次，也可一次卖出配对多个批次</small></div><button type="button" class="mini-button" id="addAllocation">＋ 添加批次</button></div><div id="allocationRows" class="allocation-rows"></div>
+    <label class="field"><span>备注</span><textarea id="sellNote" rows="2" maxlength="100" placeholder="可记录卖出原因或策略"></textarea></label>
+    <div class="calc-box sell-calc"><div><span>卖出数量</span><strong id="sellQtyPreview">0</strong></div><div><span>卖出金额</span><strong id="sellAmountPreview">¥0.00</strong></div><div><span>交易费 0.02% + 印花税 0.05%</span><strong id="sellFeePreview">¥0.00</strong></div><div><span>配对买入成本（含交易费）</span><strong id="matchedCostPreview">¥0.00</strong></div><div class="calc-total"><span>预计净盈利</span><strong id="sellProfitPreview">¥0.00</strong></div></div><p class="form-error" id="sellError"></p><div class="dialog-actions"><button type="button" class="btn btn-ghost" data-close="sellDialog">取消</button><button type="submit" class="btn btn-primary">保存卖出与配对</button></div>
+  </form></dialog>
+  <dialog id="quickSellDialog"><form id="quickSellForm" novalidate>
+    <div class="dialog-head"><div><p class="eyebrow">QUICK SELL</p><h2>卖出这一笔持仓</h2></div><button type="button" class="close" data-close="quickSellDialog">×</button></div>
+    <input id="quickSellBuyId" type="hidden">
+    <div class="quick-sell-summary"><div><span>标的</span><strong id="quickSellAsset">—</strong></div><div><span>买入批次</span><strong id="quickSellBatch">—</strong></div><div><span>当前可卖数量</span><strong id="quickSellAvailable">0</strong></div><div><span>卖出日期</span><strong id="quickSellDate">—</strong></div></div>
+    <div class="form-grid"><label class="field"><span>本次卖出数量 * <small>默认全部，可向下调整</small></span><input id="quickSellQuantity" type="number" min="0" step="100" placeholder="卖出数量" required></label><label class="field"><span>卖出单价 *</span><div class="input-prefix"><i>¥</i><input id="quickSellPrice" type="number" min="0.0001" step="0.0001" placeholder="输入卖出价格" required></div></label></div>
+    <div class="calc-box"><div><span>卖出金额</span><strong id="quickSellAmount">¥0.00</strong></div><div><span>全部费用</span><strong id="quickSellFees">¥0.00</strong></div><div class="calc-total"><span>预计净盈利</span><strong id="quickSellProfit">¥0.00</strong></div></div>
+    <p class="form-error" id="quickSellError"></p><div class="dialog-actions"><button type="button" class="btn btn-ghost" data-close="quickSellDialog">取消</button><button type="submit" class="btn btn-primary">保存卖出</button></div>
+  </form></dialog>
+  <dialog id="categoryDialog"><div class="category-dialog-body">
+    <div class="dialog-head"><div><p class="eyebrow">CATEGORIES</p><h2>管理交易分类</h2></div><button type="button" class="close" data-close="categoryDialog">×</button></div>
+    <p class="category-help">分类用于区分模拟、虚拟、真实等交易。删除正在使用的分类时，相关记录会转移到其他分类。</p>
+    <div id="categoryList" class="category-list"></div>
+    <div class="category-add"><input id="newCategoryName" maxlength="12" placeholder="输入新分类名称"><button type="button" class="btn btn-primary" id="addCategory">＋ 添加分类</button></div>
+    <p class="form-error" id="categoryError"></p>
+  </div></dialog>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="vendor/supabase.min.js"></script>
+  <script src="cloud-config.js"></script><script src="cloud.js"></script><script src="app.js"></script>
+</body></html>
